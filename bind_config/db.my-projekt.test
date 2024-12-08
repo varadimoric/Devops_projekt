@@ -1,0 +1,12 @@
+$TTL    604800
+@       IN      SOA    my-projekt.test.    admin.my-projekt.test.  (
+                1       ; Serial
+                604800  ; Refresh
+                86400   ; Retry
+                2419200 ; Expire
+                604800) ; Negative Cache TTL
+;
+@       IN      NS      ns.my-projekt.test.
+@       IN      A       127.30.0.3
+ns      IN      A       127.30.0.2
+www     IN      A       127.30.0.3

@@ -1,0 +1,36 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+    networks:
+      deploy-network:
+        ipv4_address: 172.32.0.2  # Assign a static IP to Jenkins
+
+  deploy-container:
+    build:
+      context: .
+      dockerfile: Dockerfile_deploy-env
+    container_name: node20-deploy-container
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    networks:
+      deploy-network:
+        ipv4_address: 172.32.0.3  # Assign a static IP to deploy container
+    command: ["/bin/bash", "-c", "/usr/sbin/sshd && /bin/bash"]
+    tty: true
+    stdin_open: true
+
+networks:
+  deploy-network:
+    name: deploy-network
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.32.0.0/16
+        

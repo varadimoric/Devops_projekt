@@ -1,0 +1,28 @@
+services:
+  bind9:
+    image: internetsystemsconsortium/bind9:9.18
+    ports:
+      - "5300:53/tcp"
+      - "5300:53/udp"
+    volumes:
+      - ./bind_config:/etc/bind
+    networks:
+      app_network:
+        ipv4_address: 172.30.0.2
+
+  angular-app:
+    build:
+      context: .
+      dockerfile: Dockerfile_angular-dev-env
+    ports:
+      - "4200:4200"
+    networks:
+      app_network:
+        ipv4_address: 172.30.0.3
+
+networks:
+  app_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

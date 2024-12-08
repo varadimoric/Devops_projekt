@@ -1,0 +1,39 @@
+# Use the official Node.js 20 image as the base image
+FROM node:20
+
+# Install OpenSSH Server
+RUN apt-get update && apt-get install -y openssh-server && apt-get clean
+
+RUN npm install -g pm2
+
+# Configure SSH
+RUN mkdir /var/run/sshd
+RUN echo 'root:dockerpassword' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+# Create deploy user and group
+RUN groupadd -r deploy && useradd -m -r -g deploy deploy
+# Set password for deploy user (change 'deploypassword' to your desired password)
+RUN echo 'deploy:deploypassword' | chpasswd
+# Create app directory and set permissions
+RUN mkdir -p /app && chown deploy:deploy /app
+
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+
+COPY keys/jenkins_deploy_key.pub /tmp/jenkins_deploy_key.pub
+RUN mkdir -p /home/deploy/.ssh && \
+    cat /tmp/jenkins_deploy_key.pub >> /home/deploy/.ssh/authorized_keys && \
+    chown -R deploy:deploy /home/deploy/.ssh && \
+    chmod 700 /home/deploy/.ssh && \
+    chmod 600 /home/deploy/.ssh/authorized_keys && \
+    rm /tmp/jenkins_deploy_key.pub
+
+# Create app directory
+WORKDIR /app
+
+# Expose port for the application and SSH
+EXPOSE 3000 22
+
+# Start SSH service and the application
+CMD ["/bin/bash", "-c", "/usr/sbin/sshd && /bin/bash"]

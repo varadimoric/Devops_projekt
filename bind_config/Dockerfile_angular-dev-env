@@ -1,0 +1,14 @@
+FROM node:20
+
+RUN npm install -g @angular/cli
+
+WORKDIR /tmp
+
+ENV NG_CLI_ANALYTICS=false
+
+RUN ng new tst-projekt  --interactive false --ssr false --style scss
+WORKDIR /tmp/test-projekt
+
+EXPOSE 4200
+
+CMD ["ng", "serve", "--host", "0.0.0.0"]
